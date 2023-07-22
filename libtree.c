@@ -34,7 +34,8 @@
 
 /* We will need to pass around file stat info quite a bit, so let's make a struct for this purpose.
  */
-struct fileinfo {
+struct fileinfo
+{
   char *path;
   struct stat st;
 };
@@ -70,9 +71,12 @@ tree_print(char const *path, struct tree_options _opts)
   opts = _opts;
   depth = 0;
   struct fileinfo finfo;
-  if ((finfo.path = strdup(path)) == NULL) goto exit;
-  if (fstatat(cur_dir, path, &(finfo.st), AT_SYMLINK_NOFOLLOW) == -1) goto exit;
-  if (tree_print_recurse(finfo) == -1) goto exit;
+  if ((finfo.path = strdup(path)) == NULL)
+    goto exit;
+  if (fstatat(cur_dir, path, &(finfo.st), AT_SYMLINK_NOFOLLOW) == -1)
+    goto exit;
+  if (tree_print_recurse(finfo) == -1)
+    goto exit;
 exit:
   free(finfo.path);
   return errno ? -1 : 0;
@@ -90,16 +94,26 @@ tree_print_recurse(struct fileinfo finfo)
   errno = 0;
 
   /* TODO: implement dirsonly functionality here */
+  if (opts.dirsonly && !S_ISDIR(finfo.st.st_mode))
+    goto exit;
 
   /* TODO: print indentation */
+  for (int i = 0; i < depth; ++i)
+    printf("  ");
 
   /* TODO: print the path info */
+  if (print_path_info(finfo) == -1)
+    goto exit;
 
   /* TODO: continue ONLY if path is a directory */
+  if (!S_ISDIR(finfo.st.st_mode))
+    goto exit;
 
   if ((dir = openat(cur_dir, finfo.path, O_RDONLY | O_CLOEXEC)) == -1 ||
-      (dirp = fdopendir(dir)) == NULL) {
-    if (errno == EACCES) {
+      (dirp = fdopendir(dir)) == NULL)
+  {
+    if (errno == EACCES)
+    {
       errno = 0; /* not an error, so reset errno! */
       printf(" [could not open directory %s]\n", finfo.path);
     }
@@ -107,16 +121,27 @@ tree_print_recurse(struct fileinfo finfo)
   }
   cur_dir = dir;
 
-  if (putchar('\n') == EOF) goto exit;
+  if (read_file_list(dirp, &file_list, &file_count) == -1)
+  {
+    if (errno == EACCES)
+    {
+      errno = 0; /* not an error, so reset errno! */
+      printf(" [could not open directory %s]\n", finfo.path);
+    }
+    goto exit;
+  }
 
-  if (read_file_list(dirp, &file_list, &file_count) == -1) goto exit;
+  if (putchar('\n') == EOF)
+    goto exit;
   /* See QSORT(3) for info about this function. It's not super important. It just sorts the list of
    * files using the filesort() function, which is the part you need to finish. */
   qsort(file_list, file_count, sizeof *file_list, filecmp);
 
   ++depth;
-  for (size_t i = 0; i < file_count; ++i) {
-    if (tree_print_recurse(file_list[i]) == -1) goto exit; /*  Recurse */
+  for (size_t i = 0; i < file_count; ++i)
+  {
+    if (tree_print_recurse(file_list[i]) == -1)
+      goto exit; /*  Recurse */
   }
   --depth;
 exit:;
@@ -124,6 +149,8 @@ exit:;
    * Hint: look for realloc, malloc, and calloc calls for memory allocation
    *       look for open*() function calls for file related allocations
    */
+  free_file_list(&file_list, file_count);
+  closedir(dirp);
   cur_dir = sav_dir;
   return errno ? -1 : 0;
 }
@@ -136,32 +163,45 @@ static int
 print_path_info(struct fileinfo finfo)
 {
   char sep = '[';
-  if (opts.perms) {
-    if (printf("%c%s", sep, "abcdefghi") < 0) goto exit; /* TODO */
+  if (opts.perms)
+  {
+    if (printf("%c%s", sep, "abcdefghi") < 0)
+      goto exit; /* TODO */
     sep = ' ';
   }
-  if (opts.user) {
+  if (opts.user)
+  {
     /*  Hint: getpwuid(3) */
-    if (printf("%c%s", sep, "hello") < 0) goto exit; /* TODO */
+    if (printf("%c%s", sep, "hello") < 0)
+      goto exit; /* TODO */
     sep = ' ';
   }
-  if (opts.group) {
+  if (opts.group)
+  {
     /*  Hint: getgrgid(3) */
-    if (printf("%c%s", sep, "world") < 0) goto exit; /* TODO */
+    if (printf("%c%s", sep, "world") < 0)
+      goto exit; /* TODO */
     sep = ' ';
   }
-  if (opts.size) {
+  if (opts.size)
+  {
     /*  Hint: stat.h(0p) */
-    if (printf("%c%jd", sep, (intmax_t)-12) < 0) goto exit; /* TODO */
+    if (printf("%c%jd", sep, (intmax_t)-12) < 0)
+      goto exit; /* TODO */
     sep = ' ';
   }
   if (sep != '[')
-    if (printf("] ") < 0) goto exit;
-  if (printf("%s", finfo.path) < 0) goto exit;
-  if (S_ISLNK(finfo.st.st_mode)) {
+    if (printf("] ") < 0)
+      goto exit;
+  if (printf("%s", finfo.path) < 0)
+    goto exit;
+  if (S_ISLNK(finfo.st.st_mode))
+  {
     char rp[PATH_MAX + 1] = {0};
-    if (readlinkat(cur_dir, finfo.path, rp, PATH_MAX) == -1) goto exit;
-    if (printf(" -> %s", rp) < 0) goto exit;
+    if (readlinkat(cur_dir, finfo.path, rp, PATH_MAX) == -1)
+      goto exit;
+    if (printf(" -> %s", rp) < 0)
+      goto exit;
   }
 exit:
   return errno ? -1 : 0;
@@ -176,23 +216,27 @@ filecmp(void const *_lhs, void const *_rhs)
   struct fileinfo const *lhs = _lhs, *rhs = _rhs;
   struct timespec const lt = lhs->st.st_mtim, rt = rhs->st.st_mtim;
   int retval = 0;
-  switch (opts.sort) {
-    case NONE:
-      retval = 0; /*  Well that was easy */
-      break;
-    case ALPHA:
-      break; /* TODO */
-    case RALPHA:
-      retval = strcoll(rhs->path, lhs->path);
-      break;
-    case TIME:
-      /*  I did this one for you :) */
-      if (rt.tv_sec != lt.tv_sec) {
-        retval = rt.tv_sec - lt.tv_sec;
-      } else {
-        retval = rt.tv_nsec - lt.tv_nsec;
-      }
-      break;
+  switch (opts.sort)
+  {
+  case NONE:
+    retval = 0; /*  Well that was easy */
+    break;
+  case ALPHA:
+    break; /* TODO */
+  case RALPHA:
+    retval = strcoll(rhs->path, lhs->path);
+    break;
+  case TIME:
+    /*  I did this one for you :) */
+    if (rt.tv_sec != lt.tv_sec)
+    {
+      retval = rt.tv_sec - lt.tv_sec;
+    }
+    else
+    {
+      retval = rt.tv_nsec - lt.tv_nsec;
+    }
+    break;
   }
   return retval;
 }
@@ -203,13 +247,16 @@ filecmp(void const *_lhs, void const *_rhs)
 static int
 read_file_list(DIR *dirp, struct fileinfo **file_list, size_t *file_count)
 {
-  for (;;) {
+  for (;;)
+  {
     errno = 0;
     struct dirent *de = readdir(dirp);
-    if (de == NULL) break;
+    if (de == NULL)
+      break;
 
     /* Skip the "." and ".." subdirectories */
-    if (strcoll(de->d_name, ".") == 0 || strcoll(de->d_name, "..") == 0) continue;
+    if (strcoll(de->d_name, ".") == 0 || strcoll(de->d_name, "..") == 0)
+      continue;
 
     /* TODO: Skip hidden files? */
 
@@ -229,7 +276,8 @@ read_file_list(DIR *dirp, struct fileinfo **file_list, size_t *file_count)
 static void
 free_file_list(struct fileinfo **file_list, size_t file_count)
 {
-  for (size_t i = 0; i < file_count; ++i) {
+  for (size_t i = 0; i < file_count; ++i)
+  {
     free((*file_list)[i].path);
   }
   free(*file_list);
