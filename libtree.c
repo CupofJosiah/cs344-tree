@@ -86,6 +86,7 @@ exit:
 static int
 tree_print_recurse(struct fileinfo finfo)
 {
+  printf("here");
   int dir = -1, sav_dir = cur_dir;
   DIR *dirp = NULL;
   struct fileinfo *file_list = NULL;
