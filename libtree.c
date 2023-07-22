@@ -104,7 +104,7 @@ tree_print_recurse(struct fileinfo finfo)
   /* TODO: print the path info */
   if (print_path_info(finfo) == -1)
     goto exit;
-
+  printf("here");
   /* TODO: continue ONLY if path is a directory */
   if (!S_ISDIR(finfo.st.st_mode))
     goto exit;
@@ -119,7 +119,7 @@ tree_print_recurse(struct fileinfo finfo)
     }
     goto exit;
   }
-  printf("here");
+
   cur_dir = dir;
 
   if (read_file_list(dirp, &file_list, &file_count) == -1)
