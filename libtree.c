@@ -212,36 +212,36 @@ exit:
   return errno ? -1 : 0;
 }
 
-/**
- * @brief Reads all files in a directory and populates a fileinfo array
- */
-static int
-read_file_list(DIR *dirp, struct fileinfo **file_list, size_t *file_count)
-{
-  for (;;)
-  {
-    errno = 0;
-    struct dirent *de = readdir(dirp);
-    if (de == NULL)
-      break;
+// /**
+//  * @brief Reads all files in a directory and populates a fileinfo array
+//  */
+// static int
+// read_file_list(DIR *dirp, struct fileinfo **file_list, size_t *file_count)
+// {
+//   for (;;)
+//   {
+//     errno = 0;
+//     struct dirent *de = readdir(dirp);
+//     if (de == NULL)
+//       break;
 
-    /* Skip the "." and ".." subdirectories */
-    if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
-      continue;
+//     /* Skip the "." and ".." subdirectories */
+//     if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
+//       continue;
 
-    /* TODO: Skip hidden files? */
-    if (opts.all && de->d_name[0] == '.')
-      continue;
+//     /* TODO: Skip hidden files? */
+//     if (opts.all && de->d_name[0] == '.')
+//       continue;
 
-    ++(*file_count);
-    (*file_list) = realloc((*file_list), sizeof *(*file_list) * (*file_count));
-    (*file_list)[(*file_count) - 1].path = strdup(de->d_name);
-    if (fstatat(cur_dir, de->d_name, &(*file_list)[(*file_count) - 1].st, AT_SYMLINK_NOFOLLOW) ==
-        -1)
-      break;
-  }
-  return errno ? -1 : 0;
-}
+//     ++(*file_count);
+//     (*file_list) = realloc((*file_list), sizeof *(*file_list) * (*file_count));
+//     (*file_list)[(*file_count) - 1].path = strdup(de->d_name);
+//     if (fstatat(cur_dir, de->d_name, &(*file_list)[(*file_count) - 1].st, AT_SYMLINK_NOFOLLOW) ==
+//         -1)
+//       break;
+//   }
+//   return errno ? -1 : 0;
+// }
 
 /**
  * @brief File comparison function, used by qsort
