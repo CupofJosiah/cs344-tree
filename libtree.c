@@ -92,6 +92,7 @@ tree_print_recurse(struct fileinfo finfo)
   size_t file_count = 0;
 
   errno = 0;
+  printf("here");
 
   /* TODO: implement dirsonly functionality here */
   if (opts.dirsonly && !S_ISDIR(finfo.st.st_mode))
@@ -100,7 +101,7 @@ tree_print_recurse(struct fileinfo finfo)
   /* TODO: print indentation */
   for (int i = 0; i < depth; ++i)
     printf("  ");
-  printf("here");
+
   /* TODO: print the path info */
   if (print_path_info(finfo) == -1)
     goto exit;
