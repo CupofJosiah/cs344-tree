@@ -93,21 +93,21 @@ tree_print_recurse(struct fileinfo finfo)
 
   errno = 0;
 
-  /* TODO: implement dirsonly functionality here */
-  if (opts.dirsonly && !S_ISDIR(finfo.st.st_mode))
-    goto exit;
+  // /* TODO: implement dirsonly functionality here */
+  // if (opts.dirsonly && !S_ISDIR(finfo.st.st_mode))
+  //   goto exit;
 
-  /* TODO: print indentation */
-  for (int i = 0; i < depth; ++i)
-    printf("  ");
+  // /* TODO: print indentation */
+  // for (int i = 0; i < depth; ++i)
+  //   printf("  ");
 
-  /* TODO: print the path info */
-  if (print_path_info(finfo) == -1)
-    goto exit;
+  // /* TODO: print the path info */
+  // if (print_path_info(finfo) == -1)
+  //   goto exit;
 
-  /* TODO: continue ONLY if path is a directory */
-  if (!S_ISDIR(finfo.st.st_mode))
-    goto exit;
+  // /* TODO: continue ONLY if path is a directory */
+  // if (!S_ISDIR(finfo.st.st_mode))
+  //   goto exit;
 
   if ((dir = openat(cur_dir, finfo.path, O_RDONLY | O_CLOEXEC)) == -1 ||
       (dirp = fdopendir(dir)) == NULL)
@@ -149,8 +149,8 @@ exit:;
    * Hint: look for realloc, malloc, and calloc calls for memory allocation
    *       look for open*() function calls for file related allocations
    */
-  free_file_list(&file_list, file_count);
-  closedir(dirp);
+  // free_file_list(&file_list, file_count);
+  // closedir(dirp);
   cur_dir = sav_dir;
   return errno ? -1 : 0;
 }
