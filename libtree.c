@@ -94,6 +94,8 @@ tree_print_recurse(struct fileinfo finfo)
   errno = 0;
 
   /* TODO: implement dirsonly functionality here */
+  if (opts.dirsonly && !S_ISDIR(finfo.st.st_mode))
+    goto exit;
 
   /* TODO: print indentation */
   for (int i = 0; i < depth * opts.indent; ++i)
@@ -150,6 +152,7 @@ exit:;
    * Hint: look for realloc, malloc, and calloc calls for memory allocation
    *       look for open*() function calls for file related allocations
    */
+  free_file_list(&file_list, file_count);
   cur_dir = sav_dir;
   return errno ? -1 : 0;
 }
@@ -164,28 +167,33 @@ print_path_info(struct fileinfo finfo)
   char sep = '[';
   if (opts.perms)
   {
-    if (printf("%c%s", sep, "abcdefghi") < 0)
+    if (printf("%c%s", sep, mode_string(finfo.st.st_mode)) < 0)
       goto exit; /* TODO */
     sep = ' ';
   }
   if (opts.user)
   {
-    /*  Hint: getpwuid(3) */
-    if (printf("%c%s", sep, "hello") < 0)
-      goto exit; /* TODO */
-    sep = ' ';
+    struct passwd *pw = getpwuid(finfo.st.st_uid);
+    if (pw)
+    {
+      if (printf("%c%s", sep, pw->pw_name) < 0)
+        goto exit; /* TODO */
+      sep = ' ';
+    }
   }
   if (opts.group)
   {
-    /*  Hint: getgrgid(3) */
-    if (printf("%c%s", sep, "world") < 0)
-      goto exit; /* TODO */
-    sep = ' ';
+    struct group *gr = getgrgid(finfo.st.st_gid);
+    if (gr)
+    {
+      if (printf("%c%s", sep, gr->gr_name) < 0)
+        goto exit; /* TODO */
+      sep = ' ';
+    }
   }
   if (opts.size)
   {
-    /*  Hint: stat.h(0p) */
-    if (printf("%c%jd", sep, (intmax_t)-12) < 0)
+    if (printf("%c%jd", sep, (intmax_t)finfo.st.st_size) < 0)
       goto exit; /* TODO */
     sep = ' ';
   }
@@ -259,6 +267,8 @@ read_file_list(DIR *dirp, struct fileinfo **file_list, size_t *file_count)
       continue;
 
     /* TODO: Skip hidden files? */
+    if (!opts.all && de->d_name[0] == '.')
+      continue;
 
     ++(*file_count);
     (*file_list) = realloc((*file_list), sizeof *(*file_list) * (*file_count));
