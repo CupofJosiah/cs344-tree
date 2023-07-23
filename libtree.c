@@ -96,8 +96,8 @@ tree_print_recurse(struct fileinfo finfo)
   /* TODO: implement dirsonly functionality here */
 
   /* TODO: print indentation */
-  for (int i = 0; i < depth; ++i)
-    printf("  ");
+  for (int i = 0; i < depth * opts.indent; ++i)
+    printf(" ");
 
   /* TODO: print the path info */
   if (print_path_info(finfo) == -1)
