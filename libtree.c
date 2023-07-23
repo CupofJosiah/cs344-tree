@@ -97,7 +97,7 @@ tree_print_recurse(struct fileinfo finfo)
 
   /* TODO: print indentation */
   for (int i = 0; i < depth; ++i)
-    printf("  ");
+    printf("\n  ");
 
   /* TODO: print the path info */
   if (print_path_info(finfo) == -1)
@@ -218,6 +218,7 @@ filecmp(void const *_lhs, void const *_rhs)
     retval = 0; /*  Well that was easy */
     break;
   case ALPHA:
+    retval = strcoll(lhs->path, rhs->path);
     break; /* TODO */
   case RALPHA:
     retval = strcoll(rhs->path, lhs->path);
