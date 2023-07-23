@@ -97,11 +97,14 @@ tree_print_recurse(struct fileinfo finfo)
 
   /* TODO: print indentation */
   for (int i = 0; i < depth; ++i)
-    printf("\n  ");
+    printf("  ");
 
   /* TODO: print the path info */
   if (print_path_info(finfo) == -1)
+  {
+    printf("\n");
     goto exit;
+  }
 
   /* TODO: continue ONLY if path is a directory */
   if (!S_ISDIR(finfo.st.st_mode))
