@@ -100,6 +100,8 @@ tree_print_recurse(struct fileinfo finfo)
   /* TODO: print the path info */
 
   /* TODO: continue ONLY if path is a directory */
+  if (!S_ISDIR(finfo.st.st_mode))
+    goto exit;
 
   if ((dir = openat(cur_dir, finfo.path, O_RDONLY | O_CLOEXEC)) == -1 ||
       (dirp = fdopendir(dir)) == NULL)
