@@ -192,7 +192,7 @@ print_path_info(struct fileinfo finfo)
   if (sep != '[')
     if (printf("] ") < 0)
       goto exit;
-  if (printf("%s", finfo.path) < 0)
+  if (printf("%s\n", finfo.path) < 0)
     goto exit;
   if (S_ISLNK(finfo.st.st_mode))
   {
